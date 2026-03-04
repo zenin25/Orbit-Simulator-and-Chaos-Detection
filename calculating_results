@@ -1,0 +1,88 @@
+import numpy as np
+import csv
+
+G = 1
+M_sun = 1000
+
+dt = 0.001677
+steps = 200000
+
+m1 = 1
+
+runs = 150
+start_mass = 20
+end_mass = 40
+
+results = []
+
+for i in range(runs):
+
+    m2 = start_mass + (end_mass-start_mass)*i/(runs-1)
+
+    print(f"Run {i+1}/{runs}  mass={m2:.4f}")
+
+    x1,y1 = 1.7,0
+    x2,y2 = 2.7,0
+
+    v1 = np.sqrt(G*M_sun/x1)
+    v2 = np.sqrt(G*M_sun/x2)
+
+    vx1,vy1 = 0,v1
+    vx2,vy2 = 0,v2*0.9999999
+
+    outcome = "stable"
+    failure_time = steps*dt
+
+    for step in range(steps):
+
+        r1 = np.sqrt(x1**2+y1**2)
+        r2 = np.sqrt(x2**2+y2**2)
+
+        dx = x2-x1
+        dy = y2-y1
+        r12 = np.sqrt(dx**2+dy**2)
+
+        if r12 < 0.5 or r1 < 0.5 or r2 < 0.5:
+            outcome = "collision"
+            failure_time = step*dt
+            break
+
+        if r1 > 4 or r2 > 4:
+            outcome = "escape"
+            failure_time = step*dt
+            break
+
+        ax1 = -G*M_sun*x1/r1**3
+        ay1 = -G*M_sun*y1/r1**3
+
+        ax2 = -G*M_sun*x2/r2**3
+        ay2 = -G*M_sun*y2/r2**3
+
+        ax1 += G*m2*dx/r12**3
+        ay1 += G*m2*dy/r12**3
+
+        ax2 -= G*m1*dx/r12**3
+        ay2 -= G*m1*dy/r12**3
+
+        vx1 += ax1*dt
+        vy1 += ay1*dt
+
+        vx2 += ax2*dt
+        vy2 += ay2*dt
+
+        x1 += vx1*dt
+        y1 += vy1*dt
+
+        x2 += vx2*dt
+        y2 += vy2*dt
+
+    results.append((m1,m2,outcome,failure_time))
+
+
+with open("stability_scan.csv","w",newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(["earth_mass","planet_mass","result","failure_time"])
+    writer.writerows(results)
+
+print("\nSweep complete.")
+print("Results saved to stability_scan.csv")

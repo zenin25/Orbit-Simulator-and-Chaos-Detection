@@ -1,0 +1,35 @@
+import csv
+
+input_file = "stability_scan.csv"
+output_file = "classified_stability_scan.csv"
+
+max_time = 335.4
+
+with open(input_file, "r") as f:
+    reader = csv.DictReader(f)
+    rows = list(reader)
+
+for row in rows:
+
+    t = float(row["failure_time"])
+
+    if t >= max_time:
+        classification = "stable"
+
+    elif t > 100:
+        classification = "metastable"
+
+    else:
+        classification = "unstable"
+
+    row["stability_type"] = classification
+
+with open(output_file, "w", newline="") as f:
+    fieldnames = ["earth_mass","planet_mass","result","failure_time","stability_type"]
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+
+    writer.writeheader()
+    writer.writerows(rows)
+
+print("Classification complete.")
+print("New file saved as classified_stability_scan.csv")

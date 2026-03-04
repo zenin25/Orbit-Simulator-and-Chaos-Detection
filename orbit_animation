@@ -1,0 +1,115 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+G = 1
+
+m1 = float(input("Enter mass of earth: "))
+m2 = float(input("Enter mass of second planet: "))
+
+M_sun = 1000
+
+x1,y1 = 1.7,0
+x2,y2 = 2.7,0
+
+v1 = np.sqrt(G*M_sun/x1)
+v2 = np.sqrt(G*M_sun/x2)
+
+vx1,vy1 = 0,v1
+vx2,vy2 = 0,v2*0.9999999
+
+dt = 0.001677
+trail_length = 700
+
+x1s,y1s = [],[]
+x2s,y2s = [],[]
+
+fig,ax = plt.subplots()
+
+fig.patch.set_facecolor("black")
+ax.set_facecolor("black")
+
+stars_x = np.random.uniform(-5,5,400)
+stars_y = np.random.uniform(-5,5,400)
+ax.scatter(stars_x,stars_y,color="white",s=1)
+
+planet1, = ax.plot([],[],'wo',markersize=6)
+planet2, = ax.plot([],[],'wo',markersize=6)
+
+trail1, = ax.plot([],[],'w-',linewidth=1)
+trail2, = ax.plot([],[],'w-',linewidth=1)
+
+ax.scatter(0,0,color='yellow',s=400)
+
+message = ax.text(0,2.5,"",color="white",fontsize=14,ha="center")
+
+ax.set_xlim(-5,5)
+ax.set_ylim(-5,5)
+ax.set_aspect("equal")
+ax.axis("off")
+
+def update(frame):
+
+    global x1,y1,vx1,vy1,x2,y2,vx2,vy2
+
+    r1 = np.sqrt(x1**2+y1**2)
+    r2 = np.sqrt(x2**2+y2**2)
+
+    dx = x2-x1
+    dy = y2-y1
+    r12 = np.sqrt(dx**2+dy**2)
+
+    if r12 < 0.5 or r1 < 0.5 or r2 < 0.5:
+        message.set_text("CHAOS HAS BEGUN")
+
+    if r1 > 4 or r2 > 4:
+        message.set_text("EARTH IS NO MORE")
+
+    ax1 = -G*M_sun*x1/r1**3
+    ay1 = -G*M_sun*y1/r1**3
+
+    ax2 = -G*M_sun*x2/r2**3
+    ay2 = -G*M_sun*y2/r2**3
+
+    ax1 += G*m2*dx/r12**3
+    ay1 += G*m2*dy/r12**3
+
+    ax2 -= G*m1*dx/r12**3
+    ay2 -= G*m1*dy/r12**3
+
+    vx1 += ax1*dt
+    vy1 += ay1*dt
+
+    vx2 += ax2*dt
+    vy2 += ay2*dt
+
+    x1 += vx1*dt
+    y1 += vy1*dt
+
+    x2 += vx2*dt
+    y2 += vy2*dt
+
+    x1s.append(x1)
+    y1s.append(y1)
+
+    x2s.append(x2)
+    y2s.append(y2)
+
+    x1s[:] = x1s[-trail_length:]
+    y1s[:] = y1s[-trail_length:]
+
+    x2s[:] = x2s[-trail_length:]
+    y2s[:] = y2s[-trail_length:]
+
+    planet1.set_data([x1],[y1])
+    planet2.set_data([x2],[y2])
+
+    trail1.set_data(x1s,y1s)
+    trail2.set_data(x2s,y2s)
+
+    return planet1,planet2
+
+
+ani = FuncAnimation(fig,update,interval=1)
+
+plt.show()
