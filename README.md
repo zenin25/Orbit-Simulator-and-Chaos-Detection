@@ -71,7 +71,7 @@ Users can enter the masses of the planets and observe how the system evolves.
 This script is primarily used for **visual exploration of the system**.
 
 
-## sweep_simulation.py
+## calculating_results.py
 
 This script performs the **main scientific experiment**.
 
